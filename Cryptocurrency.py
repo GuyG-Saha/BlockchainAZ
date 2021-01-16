@@ -170,6 +170,16 @@ def is_valid():
     return jsonify(response), 200
 
 
+@app.route('/replace_chain', methods=['GET'])
+def replace_chain():
+    is_chain_replaced = blockChain.replace_chain()
+    if is_chain_replaced:
+        response = {'message': 'One or more nodes replaced their chain', 'new_chain': blockChain.chain}
+    else:
+        response = {'message': 'No chain was replaced'}
+    return jsonify(response), 200
+
+
 # Adding a new transactions to the Blockchain
 @app.route('/add_transaction', methods=['POST'])
 def add_transaction():
@@ -182,13 +192,26 @@ def add_transaction():
     if not all(key in body for key in transaction_keys):
         return jsonify('Invalid Transactions Headers', 400)
     index = blockChain.add_transaction(transaction_keys[0], transaction_keys[1], transaction_keys[2])
-    response = {'message', f'Transation will be added to Block {index}'}
+    response = {'message': f'Transation will be added to Block {index}'}
     return jsonify(response, 201)
 
 
 # Running the app
 app.run(host='0.0.0.0', port=5000)
 
-# Decentralizing our Blockchain
+# Part 3 - Decentralizing our Blockchain
+
+
+# Connecting new nodes
+@app.route('/connect_node', methods = ['POST'])
+def connect_node():
+    body = request.get_json()
+    nodes = body.get('nodes', None)  # Excepts the address of the node
+    if nodes:
+        for node in nodes:
+            blockChain.add_node(node)
+        response = {'message': 'all nodes are connected', 'all_nodes': list(blockChain.nodes)}
+        return jsonify(response, 200)
+    return jsonify('No nodes specified', 400)
 
 
