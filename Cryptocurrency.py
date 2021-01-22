@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 
 # Part 1 - Building a Blockchain
 
+
 class Blockchain:
 
     def __init__(self):
@@ -31,7 +32,7 @@ class Blockchain:
                  'timestamp': str(datetime.datetime.now()),
                  'proof': proof,
                  'transactions': self.transactions,
-                 'previous_hash': previous_hash},
+                 'previous_hash': previous_hash}
         self.transactions = []  # empty any pre-added transactions
         self.chain.append(block)
         return block
@@ -131,8 +132,9 @@ node_address = str(uuid4()).replace('-', '')
 # Creating a Blockchain
 blockChain = Blockchain()
 
-
 # Mining a new block
+
+
 @app.route('/mine_block', methods=['GET'])
 def mine_block():
     previous_block = blockChain.get_latest_block()
