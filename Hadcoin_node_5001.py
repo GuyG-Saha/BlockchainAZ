@@ -143,7 +143,7 @@ def mine_block():
     previous_hash = blockChain.hash(previous_block)
     block = blockChain.create_block(proof, previous_hash)
     #  Adding the Coinbase transaction
-    coinbase_transaction = blockChain.add_transaction(node_address, 'Guy', blockChain.REWARD)
+    coinbase_transaction = blockChain.add_transaction(node_address, 'Hadelin', blockChain.REWARD)
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': coinbase_transaction,
                 'timestamp': block['timestamp'],
@@ -193,13 +193,18 @@ def add_transaction():
     transaction_keys = ['sender', 'receiver', 'amount']
     if not all(key in body for key in transaction_keys):
         return jsonify('Invalid Transactions Headers', 400)
-    index = blockChain.add_transaction(body[transaction_keys[0]], body[transaction_keys[1]], body[transaction_keys[2]])
+    index = blockChain.add_transaction(transaction_keys[0], transaction_keys[1], transaction_keys[2])
     response = {'message': f'Transation will be added to Block {index}'}
     return jsonify(response, 201)
 
+
+# Running the app
+app.run(host='0.0.0.0', port=5001)
+
+# Part 3 - Decentralizing our Blockchain
+
+
 # Connecting new nodes
-
-
 @app.route('/connect_node', methods = ['POST'])
 def connect_node():
     body = request.get_json()
@@ -210,14 +215,5 @@ def connect_node():
         response = {'message': 'all nodes are connected', 'all_nodes': list(blockChain.nodes)}
         return jsonify(response, 200)
     return jsonify('No nodes specified', 400)
-
-
-# Running the app
-app.run(host='0.0.0.0', port=5000)
-
-# Part 3 - Decentralizing our Blockchain
-
-
-
 
 
