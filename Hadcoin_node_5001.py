@@ -126,7 +126,7 @@ class Blockchain:
 # Creating a Web App
 app = Flask(__name__)
 
-# Creating an address for the node on Port 5000
+# Creating an address for the node on Port 5001
 node_address = str(uuid4()).replace('-', '')
 
 # Creating a Blockchain
@@ -141,11 +141,11 @@ def mine_block():
     previous_proof = previous_block['proof']
     proof = blockChain.proof_of_work(previous_proof)
     previous_hash = blockChain.hash(previous_block)
+    blockChain.add_transaction(node_address, 'Hadelin', blockChain.REWARD)
     block = blockChain.create_block(proof, previous_hash)
     #  Adding the Coinbase transaction
-    coinbase_transaction = blockChain.add_transaction(node_address, 'Hadelin', blockChain.REWARD)
     response = {'message': 'Congratulations, you just mined a block!',
-                'index': coinbase_transaction,
+                'index': block['index'],
                 'timestamp': block['timestamp'],
                 'proof': block['proof'],
                 'previous_hash': block['previous_hash'],
@@ -187,15 +187,30 @@ def replace_chain():
 def add_transaction():
     """
     This method will be invoked using a json file which contains a bulk of transaction dict-objects
-    :return: # of new transactions
+    :return: json with message that says with index of future-mined block will have the new transaction in it
     """
     body = request.get_json()
     transaction_keys = ['sender', 'receiver', 'amount']
     if not all(key in body for key in transaction_keys):
         return jsonify('Invalid Transactions Headers', 400)
-    index = blockChain.add_transaction(transaction_keys[0], transaction_keys[1], transaction_keys[2])
+    index = blockChain.add_transaction(body[transaction_keys[0]], body[transaction_keys[1]], body[transaction_keys[2]])
     response = {'message': f'Transation will be added to Block {index}'}
     return jsonify(response, 201)
+
+
+# Connecting new nodes
+
+
+@app.route('/connect_node', methods=['POST'])
+def connect_node():
+    body = request.get_json()
+    nodes = body.get('nodes', None)  # Expects the address of the node
+    if nodes:
+        for node in nodes:
+            blockChain.add_node(node)
+        response = {'message': 'all nodes are connected', 'all_nodes': list(blockChain.nodes)}
+        return jsonify(response, 200)
+    return jsonify('No nodes specified', 400)
 
 
 # Running the app
@@ -204,16 +219,5 @@ app.run(host='0.0.0.0', port=5001)
 # Part 3 - Decentralizing our Blockchain
 
 
-# Connecting new nodes
-@app.route('/connect_node', methods = ['POST'])
-def connect_node():
-    body = request.get_json()
-    nodes = body.get('nodes', None)  # Excepts the address of the node
-    if nodes:
-        for node in nodes:
-            blockChain.add_node(node)
-        response = {'message': 'all nodes are connected', 'all_nodes': list(blockChain.nodes)}
-        return jsonify(response, 200)
-    return jsonify('No nodes specified', 400)
 
 
